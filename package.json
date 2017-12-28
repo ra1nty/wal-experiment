@@ -1,0 +1,24 @@
+{
+  "name": "wal",
+  "version": "0.0.1",
+  "description": "An experiment on building web automation language",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ra1nty/web-automation-language-experiment.git"
+  },
+  "author": "ra1n",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ra1nty/web-automation-language-experiment/issues"
+  },
+  "homepage": "https://github.com/ra1nty/web-automation-language-experiment#readme",
+  "dependencies": {
+    "async": "^2.6.0",
+    "nodemon": "^1.14.3",
+    "phantom": "^4.0.12"
+  }
+}

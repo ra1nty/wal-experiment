@@ -1,0 +1,36 @@
+crns = [1, 2, 3];
+url1 = "https://webprod.admin.uillinois.edu/ssa/servlet/SelfServiceLogin?appName=edu.uillinois.aits.SelfServiceLogin&dad=BANPROD1";
+await__page.open(url1);
+await__page.invokeMethod("evaluate", function (a1_25, a2_26) {
+  document.querySelector(a1_25).value = a2_26;
+}, "#netid", "yutang2");
+await__page.invokeMethod("evaluate", function (a1_27, a2_28) {
+  document.querySelector(a1_27).value = a2_28;
+}, "#easpass", "19970202");
+await__page.invokeMethod("evaluate", function (a1_29) {
+  document.querySelector(a1_29).click();
+}, ".bttn");
+semester = "111111";
+for (crn in crns) {
+  url = "https://ui2web1.apps.uillinois.edu/BANPROD1/bwckschd.p_disp_detail_sched?term_in=" + semester + "&crn_in=" + crn;
+  await__page.open(url);
+  remain = await__page.invokeMethod("evaluate", function (a1_30) {
+    return parseInt(document.querySelector(a1_30).innerText);
+  }, "//td[@class='dddefault'][3]");
+  if (remain) {
+    await__page.open("https://ui2web1.apps.uillinois.edu/BANPROD1/twbkwbis.P_GenMenu?name=bmenu.P_RegAgreementAdd");
+    sel = "//option[@value='" + semester + "']";
+    await__page.invokeMethod("evaluate", function (a1_31) {
+      document.querySelector(a1_31).click();
+    }, sel);
+    await__page.invokeMethod("evaluate", function (a1_32) {
+      document.querySelector(a1_32).click();
+    }, "I Agree");
+    await__page.invokeMethod("evaluate", function (a1_33, a2_34) {
+      document.querySelector(a1_33).value = a2_34;
+    }, "#crn_id1", crn);
+    await__page.invokeMethod("evaluate", function (a1_35) {
+      document.querySelector(a1_35).click();
+    }, "//input[@value='Submit Changes']");
+  }
+}
