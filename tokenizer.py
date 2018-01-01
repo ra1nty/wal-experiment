@@ -55,8 +55,8 @@ def t_NAME(t):
 	return t
 
 def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
+    r'(\d+(\.\d*)?|\.\d+)([eE][-+]? \d+)?'
+    t.value = decimal.Decimal(t.value)
     return t
 
 def t_STRING(t):
