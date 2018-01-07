@@ -1,4 +1,5 @@
 from ply import lex as lex
+import decimal
 
 tokens = (
    'ADD',
@@ -68,10 +69,9 @@ def t_STRING(t):
 
 #t_ignore = ' \t'
 
-def t_newline(t):
+def t_NEWLINE(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
-    t.type = "NEWLINE"
     if t.lexer.paren_count == 0:
         return t
 
@@ -88,18 +88,18 @@ def find_column(input,token):
 	return column
 
 def t_WS(t):
-    r' [ ]+ '
+    r'[ ]+'
     if t.lexer.at_line_start and t.lexer.paren_count == 0:
         return t
 
-def t_LBRACE(t):
+def t_LPAREN(t):
     r'\('
     t.lexer.paren_count += 1
     return t
 
 def t_RPAREN(t):
     r'\)'
-    # check for underflow?  should be the job of the parser
+    # parser check for underflow
     t.lexer.paren_count -= 1
     return t
 
@@ -142,18 +142,19 @@ def track_tokens_filter(lexer, tokens):
         yield token
         lexer.at_line_start = at_line_start
 
-def _new_token(type, lineno):
+def _new_token(type, lineno, lexpos):
     tok = lex.LexToken()
     tok.type = type
     tok.value = None
     tok.lineno = lineno
+    tok.lexpos = lexpos
     return tok
 
-def DEDENT(lineno):
-    return _new_token("DEDENT", lineno)
+def DEDENT(lineno, lexpos):
+    return _new_token("DEDENT", lineno, lexpos)
 
-def INDENT(lineno):
-    return _new_token("INDENT", lineno)
+def INDENT(lineno, lexpos):
+    return _new_token("INDENT", lineno, lexpos)
 
 def indentation_filter(tokens):
     # A stack of indentation levels; will never pop item 0
@@ -162,12 +163,6 @@ def indentation_filter(tokens):
     depth = 0
     prev_was_ws = False
     for token in tokens:
-        print "Process", token,
-        if token.at_line_start:
-        	print "at_line_start",
-        if token.must_indent:
-        	print "must_indent",
-        
         # WS only occurs at the start of the line
         # There may be WS followed by NEWLINE so
         # only track the depth here.  Don't indent/dedent
@@ -198,7 +193,7 @@ def indentation_filter(tokens):
                 raise IndentationError("expected an indented block")
 
             levels.append(depth)
-            yield INDENT(token.lineno)
+            yield INDENT(token.lineno, token.lexpos)
 
         elif token.at_line_start:
             # Must be on the same level or one of the previous levels
@@ -215,7 +210,7 @@ def indentation_filter(tokens):
                 except ValueError:
                     raise IndentationError("inconsistent indentation")
                 for _ in range(i + 1, len(levels)):
-                    yield DEDENT(token.lineno)
+                    yield DEDENT(token.lineno, token.lexpos)
                     levels.pop()
 
         yield token
@@ -225,14 +220,33 @@ def indentation_filter(tokens):
     if len(levels) > 1:
         assert token is not None
         for _ in range(1, len(levels)):
-            yield DEDENT(token.lineno)
+            yield DEDENT(token.lineno, token.lexpos)
 
 
+def filter(lexer):
+    token = None
+    tokens = iter(lexer.token, None)
+    tokens = track_tokens_filter(lexer, tokens)
+    for token in indentation_filter(tokens):
+        yield token
 
+class walLexer(object):
 
+    def __init__(self, debug=0, optimize=0, lextab='lextab', reflags=0):
+        self.lexer = lex.lex(debug=debug, optimize=optimize,
+                             lextab=lextab, reflags=reflags)
+        self.token_stream = None
 
+    def input(self, s):
+        self.lexer.paren_count = 0
+        self.lexer.input(s)
+        self.token_stream = filter(self.lexer)
 
-lexer = lex.lex()
+    def token(self):
+        try:
+            return next(self.token_stream)
+        except StopIteration:
+            return None
 
 data = '''
 url <- "http://uiuc.edu"
@@ -241,8 +255,9 @@ fill (find "#netid") "yutang2"
 fill (find "#easpass") "19970202"
 click (find ".bttn")
 if remain >= 1:
-	fill (find "#netid") "yutang2"
+    fill (find "#netid") "yutang2"
 '''
+lexer = walLexer()
 lexer.input(data)
 
 # Tokenize
