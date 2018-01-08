@@ -51,5 +51,26 @@ def p_expression_string_concat(p):
 	'stringexpr : STRING PLUS STRING'
 	p[0] = p[1] + p[3]
 
+# Catch catastrophic error, return nothing
+def p_program_error(p):
+    '''program : error'''
+    p[0] = None
+    p.parser.error = 1
 
-yacc.yacc()
+# Empty
+def p_empty(p):
+    '''empty : '''
+
+# Catastrophic error handler
+def p_error(p):
+    if not p:
+        print("SYNTAX ERROR AT EOF")
+
+walParser = yacc.yacc()
+
+def parse(data, debug=0):
+    walParser.error = 0
+    p = walParser.parse(data, debug=debug)
+    if walParser.error:
+        return None
+    return p
