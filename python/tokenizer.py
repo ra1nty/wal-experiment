@@ -57,7 +57,7 @@ def p_program_error(p):
     p[0] = None
     p.parser.error = 1
 
-# Empty
+# Empt
 def p_empty(p):
     '''empty : '''
 
