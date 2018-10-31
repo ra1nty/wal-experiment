@@ -5,8 +5,11 @@ A collection of my dumb experiments on trying to build a web scraping language (
 /JavaScript - experiments of implementing wal in Node.js
 
 library: 
+
 - sweet.js
 - phantom.js
+
+Usage:
 
 - node compiler.js <wal_source_file>
  
