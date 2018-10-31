@@ -1,6 +1,6 @@
 # wal-experiment
 
-A collection of my dumb experiments on trying to build a web scraping language (macro) in Node.js & python
+A collection of my dumb experiments on trying to build a web automation language (macro) in Node.js & python
 
 /JavaScript - experiments of implementing wal in Node.js
 
